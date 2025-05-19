@@ -7,6 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    // no dependencies needed for basic TCP proxy
+   
   }
 }
