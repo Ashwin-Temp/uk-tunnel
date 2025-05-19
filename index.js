@@ -1,17 +1,19 @@
+const net = require('net');
 
-const http = require('http');
-const httpProxy = require('http-proxy');
+const LOCAL_PORT = process.env.PORT || 25565;  // Railway port (you must confirm)
+const REMOTE_HOST = '45.143.196.191';          // Minecraft server IP
+const REMOTE_PORT = 25565;                      // Minecraft server port
 
-const proxy = httpProxy.createProxyServer({});
+const server = net.createServer(clientSocket => {
+  const serverSocket = net.createConnection({ host: REMOTE_HOST, port: REMOTE_PORT });
 
-const server = http.createServer((req, res) => {
-  proxy.web(req, res, { target: 'http://45.143.196.191:25565' }, err => {
-    res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Proxy error.');
-  });
+  clientSocket.pipe(serverSocket);
+  serverSocket.pipe(clientSocket);
+
+  clientSocket.on('error', () => serverSocket.end());
+  serverSocket.on('error', () => clientSocket.end());
 });
 
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
-  console.log(`Proxy server running on port ${PORT}`);
+server.listen(LOCAL_PORT, () => {
+  console.log(`TCP proxy running on port ${LOCAL_PORT}`);
 });
